@@ -1,0 +1,570 @@
+{
+  "limits": {
+    "peak_memory_mb": 8.0,
+    "ms_per_1s_imu": 20.0
+  },
+  "sequences": [
+    {
+      "sequence": "V1_01_easy",
+      "kind": "euroc",
+      "rows_clean": 29120,
+      "rows_degraded": 28367,
+      "rows_estimated": 28367,
+      "duration_s": 145.595000064,
+      "gt_path_length_m": 58.59,
+      "degradation": {
+        "spikes": 30,
+        "stuck_samples": 364,
+        "dropped_single": 600,
+        "dropped_burst_gaps": 14,
+        "dropped_total": 786,
+        "duplicated_rows": 33,
+        "failure_frames": 1001
+      },
+      "detected": {
+        "timestamp_unit": "ns",
+        "duplicate_rows": 33,
+        "column_order": "accel,gyro",
+        "column_order_source": "header",
+        "accel_unit": "m/s^2",
+        "failure_rows": 1001,
+        "failure_start_s": 140.595000064,
+        "gyro_unit": "rad/s",
+        "stuck_samples": 328,
+        "stuck_runs": 78,
+        "spikes_removed": 87,
+        "dropout_gaps": 581,
+        "max_gap_s": 0.13999999999998636,
+        "smoothing_passes_max": 3.0
+      },
+      "estimator": {
+        "drag_aid": {
+          "used": true,
+          "flight_seconds": 133.4,
+          "thrust_axis_body": [
+            0.9393,
+            -0.0117,
+            -0.343
+          ],
+          "drag_coefficient_per_s": 0.25,
+          "drag_bias_ms2": [
+            -0.0054,
+            -0.0438
+          ]
+        },
+        "blind": {
+          "v_term": [
+            0.0302,
+            0.4248,
+            -0.2311
+          ],
+          "a_trend": [
+            0.0648,
+            0.1385,
+            -0.1102
+          ],
+          "w_term": [
+            0.00042,
+            -0.0008,
+            -0.00095
+          ],
+          "yaw_rate_term": 0.00077,
+          "blind_seconds": 5.005
+        },
+        "static_init": true,
+        "gyro_bias_calibrated": true,
+        "g0": 9.80484,
+        "gyro_bias": [
+          -0.00182,
+          0.01969,
+          0.07838
+        ],
+        "accel_bias": [
+          -0.0455,
+          0.1346,
+          0.2167
+        ],
+        "accel_scale_error": 0.00026,
+        "filter_blocks": 1405,
+        "zupt_blocks": 46
+      },
+      "peak_memory_mb": 2.738,
+      "ms_per_1s_imu": 6.333,
+      "ms_per_1s_imu_untraced": 2.251,
+      "process_wall_s": 1.159,
+      "ate_rmse_m": 1.2310319867809052,
+      "ate_mean_m": 1.150839966475493,
+      "ate_median_m": 1.0742169146449552,
+      "ate_max_m": 2.144285560239713,
+      "rpe_1s_rmse_m": 0.21748369985641022,
+      "rpe_1s_mean_m": 0.19221707698627466,
+      "rpe_1s_max_m": 0.4891582491169947,
+      "ate_rmse_own_m": 1.2310319867809048,
+      "naive_ate_rmse_m": 23461.762419431285,
+      "stationary_ate_rmse_m": 1.8521898150030465,
+      "evo_commands": [
+        "evo_ape tum C:\\Users\\gemin\\VITChennai_ZeroDrift\\results\\V1_01_easy\\gt.tum C:\\Users\\gemin\\VITChennai_ZeroDrift\\results\\V1_01_easy\\estimated_trajectory.txt -va --align",
+        "evo_rpe tum C:\\Users\\gemin\\VITChennai_ZeroDrift\\results\\V1_01_easy\\gt.tum C:\\Users\\gemin\\VITChennai_ZeroDrift\\results\\V1_01_easy\\estimated_trajectory.txt -va --align --delta 200 --delta_unit f"
+      ],
+      "checks": [
+        {
+          "name": "8 columns per row",
+          "passed": true,
+          "detail": "column counts seen: [8]"
+        },
+        {
+          "name": "rows_out == rows_in",
+          "passed": true,
+          "detail": "degraded.csv=28367 estimated=28367 metadata=28367/28367 degrade stats=28367"
+        },
+        {
+          "name": "timestamps = input rows in seconds",
+          "passed": true,
+          "detail": "max |dt| = 2.38e-07 s"
+        },
+        {
+          "name": "duplicate rows repeat the original pose",
+          "passed": true,
+          "detail": "33 duplicates, max diff 0.0e+00"
+        },
+        {
+          "name": "no NaN / Inf",
+          "passed": true,
+          "detail": "all finite"
+        },
+        {
+          "name": "unit quaternions",
+          "passed": true,
+          "detail": "max | |q| - 1 | = 9.4e-10"
+        },
+        {
+          "name": "peak_memory_mb <= 8.0",
+          "passed": true,
+          "detail": "2.738 MB (tracemalloc heap)"
+        },
+        {
+          "name": "ms_per_1s_imu <= 20.0",
+          "passed": true,
+          "detail": "6.33 ms per 1 s of IMU, 1 thread, incl. tracemalloc overhead"
+        }
+      ],
+      "compliant": true
+    },
+    {
+      "sequence": "MH_01_easy",
+      "kind": "euroc",
+      "rows_clean": 36820,
+      "rows_degraded": 35629,
+      "rows_estimated": 35629,
+      "duration_s": 184.095000064,
+      "gt_path_length_m": 80.63,
+      "degradation": {
+        "spikes": 38,
+        "stuck_samples": 525,
+        "dropped_single": 796,
+        "dropped_burst_gaps": 26,
+        "dropped_total": 1240,
+        "duplicated_rows": 49,
+        "failure_frames": 1001
+      },
+      "detected": {
+        "timestamp_unit": "ns",
+        "duplicate_rows": 49,
+        "column_order": "accel,gyro",
+        "column_order_source": "header",
+        "accel_unit": "m/s^2",
+        "failure_rows": 1001,
+        "failure_start_s": 179.095000064,
+        "gyro_unit": "rad/s",
+        "stuck_samples": 487,
+        "stuck_runs": 114,
+        "spikes_removed": 35,
+        "dropout_gaps": 774,
+        "max_gap_s": 0.21999999999999886,
+        "smoothing_passes_max": 3.0
+      },
+      "estimator": {
+        "drag_aid": {
+          "used": true,
+          "flight_seconds": 121.0,
+          "thrust_axis_body": [
+            0.9425,
+            -0.027,
+            -0.3332
+          ],
+          "drag_coefficient_per_s": 0.25,
+          "drag_bias_ms2": [
+            0.0062,
+            -0.0514
+          ]
+        },
+        "blind": {
+          "v_term": [
+            -0.9998,
+            -0.8427,
+            -0.0762
+          ],
+          "a_trend": [
+            -0.168,
+            -0.1037,
+            0.0397
+          ],
+          "w_term": [
+            0.03385,
+            -0.00086,
+            0.02243
+          ],
+          "yaw_rate_term": 0.02365,
+          "blind_seconds": 5.005
+        },
+        "static_init": false,
+        "gyro_bias_calibrated": true,
+        "g0": 9.79849,
+        "gyro_bias": [
+          -0.0058,
+          0.01966,
+          0.07311
+        ],
+        "accel_bias": [
+          -0.0354,
+          0.1375,
+          0.1377
+        ],
+        "accel_scale_error": 0.00245,
+        "filter_blocks": 1789,
+        "zupt_blocks": 217
+      },
+      "peak_memory_mb": 3.452,
+      "ms_per_1s_imu": 6.482,
+      "ms_per_1s_imu_untraced": 2.064,
+      "process_wall_s": 1.431,
+      "ate_rmse_m": 3.358990306847293,
+      "ate_mean_m": 3.1418452835178794,
+      "ate_median_m": 3.0602814235018627,
+      "ate_max_m": 5.288819772803299,
+      "rpe_1s_rmse_m": 0.34862681299894216,
+      "rpe_1s_mean_m": 0.26628970763984494,
+      "rpe_1s_max_m": 1.4609241327360503,
+      "ate_rmse_own_m": 3.358990306847293,
+      "naive_ate_rmse_m": 50057.76758349461,
+      "stationary_ate_rmse_m": 4.322921363759146,
+      "evo_commands": [
+        "evo_ape tum C:\\Users\\gemin\\VITChennai_ZeroDrift\\results\\MH_01_easy\\gt.tum C:\\Users\\gemin\\VITChennai_ZeroDrift\\results\\MH_01_easy\\estimated_trajectory.txt -va --align",
+        "evo_rpe tum C:\\Users\\gemin\\VITChennai_ZeroDrift\\results\\MH_01_easy\\gt.tum C:\\Users\\gemin\\VITChennai_ZeroDrift\\results\\MH_01_easy\\estimated_trajectory.txt -va --align --delta 200 --delta_unit f"
+      ],
+      "checks": [
+        {
+          "name": "8 columns per row",
+          "passed": true,
+          "detail": "column counts seen: [8]"
+        },
+        {
+          "name": "rows_out == rows_in",
+          "passed": true,
+          "detail": "degraded.csv=35629 estimated=35629 metadata=35629/35629 degrade stats=35629"
+        },
+        {
+          "name": "timestamps = input rows in seconds",
+          "passed": true,
+          "detail": "max |dt| = 2.38e-07 s"
+        },
+        {
+          "name": "duplicate rows repeat the original pose",
+          "passed": true,
+          "detail": "49 duplicates, max diff 0.0e+00"
+        },
+        {
+          "name": "no NaN / Inf",
+          "passed": true,
+          "detail": "all finite"
+        },
+        {
+          "name": "unit quaternions",
+          "passed": true,
+          "detail": "max | |q| - 1 | = 8.3e-10"
+        },
+        {
+          "name": "peak_memory_mb <= 8.0",
+          "passed": true,
+          "detail": "3.452 MB (tracemalloc heap)"
+        },
+        {
+          "name": "ms_per_1s_imu <= 20.0",
+          "passed": true,
+          "detail": "6.48 ms per 1 s of IMU, 1 thread, incl. tracemalloc overhead"
+        }
+      ],
+      "compliant": true
+    },
+    {
+      "sequence": "SYN_room_walk",
+      "kind": "synthetic",
+      "rows_clean": 18001,
+      "rows_degraded": 17500,
+      "rows_estimated": 17500,
+      "duration_s": 90.0,
+      "gt_path_length_m": 68.39,
+      "degradation": {
+        "spikes": 13,
+        "stuck_samples": 158,
+        "dropped_single": 375,
+        "dropped_burst_gaps": 10,
+        "dropped_total": 523,
+        "duplicated_rows": 22,
+        "failure_frames": 1001
+      },
+      "detected": {
+        "timestamp_unit": "s",
+        "duplicate_rows": 22,
+        "column_order": "accel,gyro",
+        "column_order_source": "gravity-norm",
+        "accel_unit": "m/s^2",
+        "failure_rows": 1001,
+        "failure_start_s": 85.0,
+        "gyro_unit": "rad/s",
+        "stuck_samples": 148,
+        "stuck_runs": 35,
+        "spikes_removed": 13,
+        "dropout_gaps": 354,
+        "max_gap_s": 0.16500000000000625,
+        "smoothing_passes_max": 3.0
+      },
+      "estimator": {
+        "drag_aid": {
+          "used": false
+        },
+        "blind": {
+          "v_term": [
+            -0.0252,
+            0.3126,
+            -0.2024
+          ],
+          "a_trend": [
+            -0.0345,
+            0.1207,
+            -0.0269
+          ],
+          "w_term": [
+            -0.0048,
+            -0.02816,
+            -0.13148
+          ],
+          "yaw_rate_term": -0.13426,
+          "blind_seconds": 5.1
+        },
+        "static_init": true,
+        "gyro_bias_calibrated": true,
+        "g0": 9.9017,
+        "gyro_bias": [
+          0.0116,
+          -0.00845,
+          0.0201
+        ],
+        "accel_bias": [
+          0.0744,
+          0.1089,
+          -0.0504
+        ],
+        "accel_scale_error": 0.00119,
+        "filter_blocks": 847,
+        "zupt_blocks": 35
+      },
+      "peak_memory_mb": 1.538,
+      "ms_per_1s_imu": 5.964,
+      "ms_per_1s_imu_untraced": 2.217,
+      "process_wall_s": 0.78,
+      "ate_rmse_m": 1.200137935846015,
+      "ate_mean_m": 1.1002981920568369,
+      "ate_median_m": 1.0528819530608253,
+      "ate_max_m": 2.1153449818770795,
+      "rpe_1s_rmse_m": 0.2823822324209458,
+      "rpe_1s_mean_m": 0.23589816817639406,
+      "rpe_1s_max_m": 0.7323881111025518,
+      "ate_rmse_own_m": 1.200137935846015,
+      "naive_ate_rmse_m": 2113.6990091378557,
+      "stationary_ate_rmse_m": 1.756358924293862,
+      "evo_commands": [
+        "evo_ape tum C:\\Users\\gemin\\VITChennai_ZeroDrift\\results\\SYN_room_walk\\gt.tum C:\\Users\\gemin\\VITChennai_ZeroDrift\\results\\SYN_room_walk\\estimated_trajectory.txt -va --align",
+        "evo_rpe tum C:\\Users\\gemin\\VITChennai_ZeroDrift\\results\\SYN_room_walk\\gt.tum C:\\Users\\gemin\\VITChennai_ZeroDrift\\results\\SYN_room_walk\\estimated_trajectory.txt -va --align --delta 200 --delta_unit f"
+      ],
+      "checks": [
+        {
+          "name": "8 columns per row",
+          "passed": true,
+          "detail": "column counts seen: [8]"
+        },
+        {
+          "name": "rows_out == rows_in",
+          "passed": true,
+          "detail": "degraded.csv=17500 estimated=17500 metadata=17500/17500 degrade stats=17500"
+        },
+        {
+          "name": "timestamps = input rows in seconds",
+          "passed": true,
+          "detail": "max |dt| = 1.42e-14 s"
+        },
+        {
+          "name": "duplicate rows repeat the original pose",
+          "passed": true,
+          "detail": "22 duplicates, max diff 0.0e+00"
+        },
+        {
+          "name": "no NaN / Inf",
+          "passed": true,
+          "detail": "all finite"
+        },
+        {
+          "name": "unit quaternions",
+          "passed": true,
+          "detail": "max | |q| - 1 | = 7.2e-10"
+        },
+        {
+          "name": "peak_memory_mb <= 8.0",
+          "passed": true,
+          "detail": "1.538 MB (tracemalloc heap)"
+        },
+        {
+          "name": "ms_per_1s_imu <= 20.0",
+          "passed": true,
+          "detail": "5.96 ms per 1 s of IMU, 1 thread, incl. tracemalloc overhead"
+        }
+      ],
+      "compliant": true
+    },
+    {
+      "sequence": "SYN_fig8_moving",
+      "kind": "synthetic",
+      "rows_clean": 7001,
+      "rows_degraded": 6852,
+      "rows_estimated": 6852,
+      "duration_s": 70.0,
+      "gt_path_length_m": 91.74,
+      "degradation": {
+        "spikes": 6,
+        "stuck_samples": 88,
+        "dropped_single": 125,
+        "dropped_burst_gaps": 2,
+        "dropped_total": 160,
+        "duplicated_rows": 11,
+        "failure_frames": 501
+      },
+      "detected": {
+        "timestamp_unit": "ms",
+        "duplicate_rows": 11,
+        "column_order": "accel,gyro",
+        "column_order_source": "header",
+        "accel_unit": "g",
+        "failure_rows": 501,
+        "failure_start_s": 65.0,
+        "gyro_unit": "rad/s",
+        "stuck_samples": 83,
+        "stuck_runs": 22,
+        "spikes_removed": 6,
+        "dropout_gaps": 125,
+        "max_gap_s": 0.07000000000000028,
+        "smoothing_passes_max": 3.0
+      },
+      "estimator": {
+        "drag_aid": {
+          "used": false
+        },
+        "blind": {
+          "v_term": [
+            0.0713,
+            -0.1755,
+            -0.1841
+          ],
+          "a_trend": [
+            -0.1904,
+            0.1098,
+            -0.0678
+          ],
+          "w_term": [
+            -0.3762,
+            0.06675,
+            0.06923
+          ],
+          "yaw_rate_term": -0.37643,
+          "blind_seconds": 5.31
+        },
+        "static_init": false,
+        "gyro_bias_calibrated": false,
+        "g0": 9.90602,
+        "gyro_bias": [
+          -0.02751,
+          -0.01092,
+          0.03013
+        ],
+        "accel_bias": [
+          -0.0901,
+          0.1394,
+          -0.0157
+        ],
+        "accel_scale_error": -0.00039,
+        "filter_blocks": 647,
+        "zupt_blocks": 0
+      },
+      "peak_memory_mb": 0.969,
+      "ms_per_1s_imu": 4.313,
+      "ms_per_1s_imu_untraced": 1.444,
+      "process_wall_s": 0.53,
+      "ate_rmse_m": 1.7014157143717341,
+      "ate_mean_m": 1.5110417969033694,
+      "ate_median_m": 1.5325015616044102,
+      "ate_max_m": 3.4687440114504002,
+      "rpe_1s_rmse_m": 0.9670318850939795,
+      "rpe_1s_mean_m": 0.8778120539604666,
+      "rpe_1s_max_m": 2.7324851904062433,
+      "ate_rmse_own_m": 1.7014157143717341,
+      "naive_ate_rmse_m": 2298.628736591466,
+      "stationary_ate_rmse_m": 1.9379680626228528,
+      "evo_commands": [
+        "evo_ape tum C:\\Users\\gemin\\VITChennai_ZeroDrift\\results\\SYN_fig8_moving\\gt.tum C:\\Users\\gemin\\VITChennai_ZeroDrift\\results\\SYN_fig8_moving\\estimated_trajectory.txt -va --align",
+        "evo_rpe tum C:\\Users\\gemin\\VITChennai_ZeroDrift\\results\\SYN_fig8_moving\\gt.tum C:\\Users\\gemin\\VITChennai_ZeroDrift\\results\\SYN_fig8_moving\\estimated_trajectory.txt -va --align --delta 100 --delta_unit f"
+      ],
+      "checks": [
+        {
+          "name": "8 columns per row",
+          "passed": true,
+          "detail": "column counts seen: [8]"
+        },
+        {
+          "name": "rows_out == rows_in",
+          "passed": true,
+          "detail": "degraded.csv=6852 estimated=6852 metadata=6852/6852 degrade stats=6852"
+        },
+        {
+          "name": "timestamps = input rows in seconds",
+          "passed": true,
+          "detail": "max |dt| = 2.84e-14 s"
+        },
+        {
+          "name": "duplicate rows repeat the original pose",
+          "passed": true,
+          "detail": "11 duplicates, max diff 0.0e+00"
+        },
+        {
+          "name": "no NaN / Inf",
+          "passed": true,
+          "detail": "all finite"
+        },
+        {
+          "name": "unit quaternions",
+          "passed": true,
+          "detail": "max | |q| - 1 | = 8.7e-10"
+        },
+        {
+          "name": "peak_memory_mb <= 8.0",
+          "passed": true,
+          "detail": "0.969 MB (tracemalloc heap)"
+        },
+        {
+          "name": "ms_per_1s_imu <= 20.0",
+          "passed": true,
+          "detail": "4.31 ms per 1 s of IMU, 1 thread, incl. tracemalloc overhead"
+        }
+      ],
+      "compliant": true
+    }
+  ]
+}

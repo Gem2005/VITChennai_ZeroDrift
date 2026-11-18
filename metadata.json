@@ -1,0 +1,91 @@
+{
+  "project": "VITChennai_ZeroDrift",
+  "track": "Samsung XR Hackathon 2026 - Track 3: Path Finder",
+  "input": "degraded.csv",
+  "output": "estimated_trajectory.txt",
+  "rows_in": 28367,
+  "rows_out": 28367,
+  "imu_duration_s": 145.595,
+  "median_dt_s": 0.004999936,
+  "wall_time_s": 0.9221,
+  "ms_per_1s_imu": 6.333,
+  "peak_memory_mb": 2.738,
+  "memory_traced_with": "tracemalloc (whole pipeline, timing includes its overhead)",
+  "limits": {
+    "peak_memory_mb": 8.0,
+    "ms_per_1s_imu": 20.0
+  },
+  "compliant": true,
+  "threads": 1,
+  "preprocessing": {
+    "timestamp_unit": "ns",
+    "duplicate_rows": 33,
+    "column_order": "accel,gyro",
+    "column_order_source": "header",
+    "accel_unit": "m/s^2",
+    "failure_rows": 1001,
+    "failure_start_s": 140.595000064,
+    "gyro_unit": "rad/s",
+    "stuck_samples": 328,
+    "stuck_runs": 78,
+    "spikes_removed": 87,
+    "dropout_gaps": 581,
+    "max_gap_s": 0.13999999999998636,
+    "smoothing_passes_max": 3.0
+  },
+  "estimator": {
+    "drag_aid": {
+      "used": true,
+      "flight_seconds": 133.4,
+      "thrust_axis_body": [
+        0.9393,
+        -0.0117,
+        -0.343
+      ],
+      "drag_coefficient_per_s": 0.25,
+      "drag_bias_ms2": [
+        -0.0054,
+        -0.0438
+      ]
+    },
+    "blind": {
+      "v_term": [
+        0.0302,
+        0.4248,
+        -0.2311
+      ],
+      "a_trend": [
+        0.0648,
+        0.1385,
+        -0.1102
+      ],
+      "w_term": [
+        0.00042,
+        -0.0008,
+        -0.00095
+      ],
+      "yaw_rate_term": 0.00077,
+      "blind_seconds": 5.005
+    },
+    "static_init": true,
+    "gyro_bias_calibrated": true,
+    "g0": 9.80484,
+    "gyro_bias": [
+      -0.00182,
+      0.01969,
+      0.07838
+    ],
+    "accel_bias": [
+      -0.0455,
+      0.1346,
+      0.2167
+    ],
+    "accel_scale_error": 0.00026,
+    "filter_blocks": 1405,
+    "zupt_blocks": 46
+  },
+  "runtime": {
+    "python": "3.13.6",
+    "numpy": "2.5.5"
+  }
+}

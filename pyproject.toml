@@ -1,0 +1,25 @@
+[project]
+name = "vitchennai-zerodrift"
+version = "0.2.0"
+description = "IMU-only 6-DoF trajectory estimation under severe sensor degradation (Samsung XR Hackathon 2026, Track 3: Path Finder)"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+    { name = "Gemini Sharma", email = "geminisharma2005@gmail.com" },
+]
+# Runtime (src/main.py and everything it imports) needs numpy only.
+# scipy + pandas are required by the organiser's degrade_imu.py; evo and
+# matplotlib are used by the verification suite in scripts/.
+dependencies = [
+    "numpy>=1.26",
+    "scipy>=1.11",
+    "pandas>=2.1",
+    "evo>=1.31",
+    "matplotlib>=3.8",
+]
+
+[project.urls]
+Repository = "https://github.com/gem2005/VITChennai_ZeroDrift"
+
+[tool.uv]
+package = false

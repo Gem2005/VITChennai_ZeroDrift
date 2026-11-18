@@ -1,0 +1,19 @@
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.env
+.venv/
+venv/
+ENV/
+.idea/
+.vscode/
+*.log
+
+# downloaded benchmark data (scripts/fetch_euroc.py re-creates it)
+data/
+
+# per-sequence benchmark artefacts (scripts/benchmark_all.py re-creates them);
+# the summary table is kept
+results/*
+!results/summary.json
