@@ -1,7 +1,16 @@
 """
 main.py - Track 3 "Path Finder" entry point (IMU-only trajectory estimation).
 
-    python src/main.py --input <degraded.csv> --output estimated_trajectory.txt --meta metadata.json
+    python src/main.py --input imu0/data.csv --output estimated_trajectory.txt --meta metadata.json
+    python src/main.py -i imu0/data.csv -o estimated_trajectory.txt -m metadata.json
+    python src/main.py imu0/data.csv estimated_trajectory.txt
+    python src/main.py                  # imu0/data.csv -> <repo root>/estimated_trajectory.txt
+    cd src && python main.py ...        # same options, from inside src/
+
+Without --meta the statistics file is written as metadata.json next to the
+trajectory. Without any argument the input is imu0/data.csv (working directory,
+then repository root), else the degraded test CSV under data/, and both output
+files go to the repository root.
 
 Input : 7-column IMU CSV as produced by the organiser's degrade_imu.py
         (timestamp + accelerometer + gyroscope; column order, header and
@@ -20,22 +29,26 @@ limits is reported in the metadata ("compliant") and on stdout.
 """
 
 import os
+import sys
 
-# one CPU thread, also inside BLAS (must be set before numpy is imported)
-for _var in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS",
-             "NUMEXPR_NUM_THREADS", "VECLIB_MAXIMUM_THREADS"):
-    os.environ.setdefault(_var, "1")
+# One CPU thread, also inside BLAS. Must happen before numpy is imported, and is
+# assigned (not setdefault) so the caller's environment cannot raise the count.
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["OPENBLAS_NUM_THREADS"] = "1"
+os.environ["MKL_NUM_THREADS"] = "1"
+os.environ["VECLIB_MAXIMUM_THREADS"] = "1"
+os.environ["NUMEXPR_NUM_THREADS"] = "1"
+# The helper modules live next to this file: importable from any working
+# directory (python src/main.py from the repo root, python main.py from src/).
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import argparse
 import json
 import math
-import sys
 import time
 import tracemalloc
 
 import numpy as np
-
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from inverse_degrade import inverse_degrade, read_imu_csv
 from es_ekf import estimate_trajectory
@@ -155,28 +168,86 @@ def run_pipeline(input_path, output_path, denoise=True):
     }
 
 
+def repo_root():
+    """The directory that contains src/ (the submission root)."""
+    return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+def default_input_csv():
+    """
+    Input for a run without an input argument, or None.
+
+    Order: imu0/data.csv in the working directory, imu0/data.csv at the
+    repository root, data/imu0/data.csv, then the first degraded.csv or
+    .../imu0/data.csv found under data/ (sorted, so the choice is stable).
+    """
+    bases = [os.getcwd(), repo_root()]
+    for rel in (os.path.join("imu0", "data.csv"), os.path.join("data", "imu0", "data.csv")):
+        for base in bases:
+            path = os.path.join(base, rel)
+            if os.path.isfile(path):
+                return path
+    found = []
+    for base in bases:
+        for dirpath, dirnames, files in os.walk(os.path.join(base, "data")):
+            dirnames.sort()
+            if "degraded.csv" in files:
+                found.append((0, os.path.join(dirpath, "degraded.csv")))
+            if "data.csv" in files and os.path.basename(dirpath) == "imu0":
+                found.append((1, os.path.join(dirpath, "data.csv")))
+    return min(found)[1] if found else None
+
+
+def resolve_paths(ap, args, no_arguments):
+    """(input, output, metadata) paths for the three invocation styles."""
+    if args.input and args.input_pos and args.output_pos is None:
+        # "--input a.csv out.txt": the lone positional is the output
+        args.output_pos, args.input_pos = args.input_pos, None
+    elif args.input and args.input_pos:
+        ap.error("the input CSV was given twice (%s and %s)" % (args.input, args.input_pos))
+    if args.output and args.output_pos:
+        ap.error("the output file was given twice (%s and %s)" % (args.output, args.output_pos))
+    input_path = args.input or args.input_pos or default_input_csv()
+    if not input_path:
+        ap.error("no input CSV: pass --input <imu0/data.csv> (or a positional path), "
+                 "or place the file at imu0/data.csv")
+    if not os.path.isfile(input_path):
+        ap.error("input file not found: %s" % input_path)
+    output_path = args.output or args.output_pos
+    if not output_path:
+        # zero-argument run: the submission files belong at the repository root
+        output_path = os.path.join(repo_root() if no_arguments else os.getcwd(), "estimated_trajectory.txt")
+    meta_path = args.meta
+    if meta_path is None:
+        meta_path = os.path.join(os.path.dirname(os.path.abspath(output_path)), "metadata.json")
+    return input_path, output_path, meta_path
+
+
 def main(argv=None):
-    ap = argparse.ArgumentParser(description="VITChennai_ZeroDrift - IMU-only trajectory estimator (Track 3)")
-    ap.add_argument("input_pos", nargs="?", default=None, help="degraded IMU CSV (alternative to --input)")
-    ap.add_argument("--input", "-i", default=None, help="degraded IMU CSV")
-    ap.add_argument("--output", "-o", default="estimated_trajectory.txt", help="TUM trajectory to write")
-    ap.add_argument("--meta", "--metadata", dest="meta", default="metadata.json",
-                    help="runtime / memory / preprocessing statistics (JSON); '' disables")
+    ap = argparse.ArgumentParser(
+        description="VITChennai_ZeroDrift - IMU-only trajectory estimator (Track 3)",
+        usage="main.py [--input CSV] [--output TXT] [--meta JSON]  |  main.py CSV [TXT]  |  main.py")
+    ap.add_argument("input_pos", nargs="?", default=None, metavar="CSV",
+                    help="degraded IMU CSV (positional alternative to --input)")
+    ap.add_argument("output_pos", nargs="?", default=None, metavar="TXT",
+                    help="TUM trajectory to write (positional alternative to --output)")
+    ap.add_argument("--input", "-i", default=None, help="degraded IMU CSV (default: imu0/data.csv)")
+    ap.add_argument("--output", "-o", default=None, help="TUM trajectory to write (default: estimated_trajectory.txt)")
+    ap.add_argument("--meta", "-m", "--metadata", dest="meta", default=None,
+                    help="runtime / memory / preprocessing statistics (JSON); default: metadata.json "
+                         "next to the trajectory; '' disables")
     ap.add_argument("--no-denoise", action="store_true", help="skip the severity-adaptive smoother (ablation)")
     ap.add_argument("--no-memtrace", action="store_true",
                     help="do not trace the heap (timing without tracemalloc overhead)")
+    argv = sys.argv[1:] if argv is None else list(argv)
     args = ap.parse_args(argv)
-    input_path = args.input or args.input_pos
-    if not input_path:
-        ap.error("an input CSV is required (--input <degraded.csv>)")
-    if not os.path.isfile(input_path):
-        ap.error("input file not found: %s" % input_path)
+    input_path, output_path, meta_path = resolve_paths(ap, args, no_arguments=not argv)
 
     trace = not args.no_memtrace
     if trace:
         tracemalloc.start()
     t_start = time.perf_counter()
-    stats = run_pipeline(input_path, args.output, denoise=not args.no_denoise)
+    stats = run_pipeline(input_path, output_path, denoise=not args.no_denoise)
     wall = time.perf_counter() - t_start
     peak_mb = None
     if trace:
@@ -192,7 +263,7 @@ def main(argv=None):
         "project": "VITChennai_ZeroDrift",
         "track": "Samsung XR Hackathon 2026 - Track 3: Path Finder",
         "input": os.path.basename(input_path),
-        "output": os.path.basename(args.output),
+        "output": os.path.basename(output_path),
         "rows_in": stats["rows_in"],
         "rows_out": stats["rows_out"],
         "imu_duration_s": round(stats["imu_duration_s"], 6),
@@ -208,20 +279,20 @@ def main(argv=None):
         "estimator": stats["estimator"],
         "runtime": {"python": sys.version.split()[0], "numpy": np.__version__},
     }
-    if args.meta:
-        meta_dir = os.path.dirname(os.path.abspath(args.meta))
+    if meta_path:
+        meta_dir = os.path.dirname(os.path.abspath(meta_path))
         os.makedirs(meta_dir, exist_ok=True)
-        with open(args.meta, "w", encoding="utf-8") as f:
+        with open(meta_path, "w", encoding="utf-8") as f:
             json.dump(meta, f, indent=2)
 
-    print("[zerodrift] %s -> %s" % (input_path, args.output))
+    print("[zerodrift] %s -> %s" % (input_path, output_path))
     print("[zerodrift] rows_in=%d rows_out=%d duration=%.2fs" % (
         stats["rows_in"], stats["rows_out"], stats["imu_duration_s"]))
     print("[zerodrift] %.2f ms per 1 s of IMU (limit %.0f)%s" % (
         ms_per_s, SPEED_LIMIT_MS_PER_S,
         "" if peak_mb is None else ", peak heap %.3f MB (limit %.0f)" % (peak_mb, MEMORY_LIMIT_MB)))
     if not meta["compliant"]:
-        print("[zerodrift] WARNING: outside the Track 3 limits (see %s)" % (args.meta or "the lines above"))
+        print("[zerodrift] WARNING: outside the Track 3 limits (see %s)" % (meta_path or "the lines above"))
     return 0
 
 

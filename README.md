@@ -5,15 +5,45 @@ Samsung XR Hackathon 2026 — Track 3: Path Finder
 
 | | |
 | :--- | :--- |
-| **Author** | Gemini Sharma |
-| **Email** | geminisharma2005@gmail.com |
+| **Team Name** | `VITChennai_ZeroDrift` |
+| **Theme** | Track 03 - Path Finder: Trajectory Estimation Under Sensor Degradation |
+| **Authors** | Gemini Sharma (`geminisharma2005@gmail.com`, GitHub: `@gem2005`)<br/>Aarav Sharma (`aaravsharma0964@gmail.com`) |
+| **Email** | geminisharma2005@gmail.com, aaravsharma0964@gmail.com |
 | **GitHub** | [@gem2005](https://github.com/gem2005) — [`VITChennai_ZeroDrift`](https://github.com/gem2005/VITChennai_ZeroDrift) |
 
 `src/main.py` reads the 7-column IMU CSV produced by the organisers' `degrade_imu.py` and writes one TUM pose per input row. It uses no waypoints, images or other aiding. The runtime path imports only `numpy` and the Python standard library, runs on one thread, and is measured against the Track 3 limits (heap ≤ 8 MB, ≤ 20 ms per 1 s of IMU data).
 
 ```bash
-uv run python src/main.py --input degraded.csv --output estimated_trajectory.txt --meta metadata.json
+pip install -r requirements.txt
+python src/main.py --input imu0/data.csv --output estimated_trajectory.txt --meta metadata.json
 ```
+
+## Architecture
+
+```mermaid
+flowchart TD
+    A["Degraded IMU CSV<br/>timestamp + accel + gyro"] --> B["White-box inverse preprocessor<br/>layout and unit detection, duplicates,<br/>stuck runs, spikes, adaptive smoothing"]
+    B --> C["Dropout kinematic bridge<br/>RK4 sub-steps across missing rows"]
+    C --> D["Error-state EKF, two passes<br/>velocity, attitude, gyro bias,<br/>accel bias, accel scale"]
+    D --> E["Zero-phase drift removal<br/>plus rotor-drag aid when in flight"]
+    E --> F["5 s blind extrapolator<br/>fit on the last 3 s, damped propagation"]
+    F --> G["estimated_trajectory.txt<br/>one pose per input row"]
+    B -. "duplicate map, failure window" .-> G
+```
+
+| Stage | Code | What it does |
+| :--- | :--- | :--- |
+| White-box inverse preprocessor | `src/inverse_degrade.py` | Undoes the reversible artifacts of `degrade_imu.py` offline, before any integration |
+| Dropout kinematic bridge | `preintegrate()` in `src/es_ekf.py` | Dropouts are physically missing rows. Each gap, from a single sample up to the multi-second bursts, is integrated in `round(dt / median dt)` RK4 sub-steps with interpolated rate and specific force |
+| Error-state EKF | `run_filter()` in `src/es_ekf.py` | Tracks the errors of velocity, attitude, gyro bias, accelerometer bias and accelerometer scale |
+| 5 s blind extrapolator | `blind_extrapolate()` in `src/es_ekf.py` | Fits terminal velocity, acceleration trend and yaw rate on the last 3 s and propagates them, damped, over the timestamps of the failure window |
+
+Two labels differ from the usual shorthand, and the code is what counts:
+
+- The filter carries **13 error states**, not 15: velocity (3), attitude (3), gyro bias (3), accelerometer bias (3) and accelerometer scale (1). Position is not a filter state. It is integrated from the corrected velocity and then de-drifted in a separate least-squares step.
+- The blind extrapolator is a weighted least-squares fit with damped propagation. It is not an autoregressive model.
+
+Details of each stage are in [Method](#method).
 
 ---
 
@@ -51,22 +81,61 @@ Running the same estimator on the **clean** recordings gives almost the same err
 
 ## Quick start
 
-Requires [uv](https://docs.astral.sh/uv/).
-
 ```bash
 git clone https://github.com/gem2005/VITChennai_ZeroDrift.git
 cd VITChennai_ZeroDrift
-uv sync                                   # creates .venv from uv.lock
+```
 
-# estimate a trajectory
-uv run python src/main.py --input degraded.csv --output estimated_trajectory.txt --meta metadata.json
+### 1. Standard Python 3.11
+
+```bash
+pip install -r requirements.txt
+python src/main.py --input <path/to/imu0/data.csv> --output estimated_trajectory.txt
+```
+
+`requirements.txt` holds the single runtime dependency, `numpy>=1.24.0`. Tested on Python 3.11.9 with NumPy 1.24.0 and 2.4.6, and on Python 3.13.6 with NumPy 2.5.5; all three reproduce the committed `estimated_trajectory.txt` to within 1 µm.
+
+### 2. uv
+
+Requires [uv](https://docs.astral.sh/uv/). `pyproject.toml` and `uv.lock` pin the full environment, including the verification tools.
+
+```bash
+uv sync                                   # creates .venv from uv.lock
+uv run python src/main.py --input <path/to/imu0/data.csv> --output estimated_trajectory.txt --meta metadata.json
 
 # full verification suite (degrade -> estimate -> assert -> evo -> plots)
 bash scripts/evaluate.sh                                             # Linux / macOS / Git Bash
 powershell -ExecutionPolicy Bypass -File scripts/evaluate.ps1        # Windows
 ```
 
-`requirements.txt` is exported from `pyproject.toml` with `uv pip compile pyproject.toml -o requirements.txt` for environments without uv. The estimator itself needs only `numpy`; `scipy` and `pandas` are needed by `degrade_imu.py`, and `evo` and `matplotlib` by the verification suite.
+### 3. Docker
+
+```bash
+docker build -t vitchennai_zerodrift .
+docker run --rm -v "$PWD:/io" vitchennai_zerodrift \
+    --input /io/imu0/data.csv --output /io/estimated_trajectory.txt --meta /io/metadata.json
+```
+
+The image is `python:3.11-slim` with `numpy`, `src/` and `README.md`. Its entry point is `python3 src/main.py`, so everything after the image name is an argument of the estimator. In PowerShell write the mount as `-v "${PWD}:/io"`.
+
+### Command line
+
+All of these are accepted, from the repository root or from inside `src/`:
+
+```bash
+python src/main.py --input imu0/data.csv --output estimated_trajectory.txt --meta metadata.json
+python src/main.py -i imu0/data.csv -o estimated_trajectory.txt -m metadata.json
+python src/main.py imu0/data.csv estimated_trajectory.txt        # positional
+python src/main.py                                               # no arguments
+cd src && python main.py --input ../imu0/data.csv --output ../estimated_trajectory.txt
+```
+
+- Without `--meta`, the statistics are written as `metadata.json` next to the trajectory.
+- Without any argument, the input is `imu0/data.csv` (working directory, then repository root), otherwise the degraded test file `data/imu0/data.csv`, and both outputs are written to the repository root. `data/imu0/data.csv` is `V1_01_easy` degraded by the official script; running `python src/main.py` in a fresh clone regenerates the committed `estimated_trajectory.txt`.
+
+### Dependencies
+
+`requirements.txt` is the runtime set (`numpy`). `requirements-dev.txt` is the full environment exported from `pyproject.toml` with `uv pip compile pyproject.toml -o requirements-dev.txt`: `scipy` and `pandas` are needed by `degrade_imu.py`, and `evo` and `matplotlib` by the verification suite.
 
 ### Input
 
@@ -148,6 +217,17 @@ The EuRoC IMU and ground-truth CSVs (a few MB) are downloaded by `scripts/fetch_
 
 `scripts/test_input_formats.py` rewrites a degraded file in 22 layouts (column orders, units, timestamp units, CRLF, NaN cells, 1-row to 2000-row files, all-zero and constant sensors, empty file) and checks that each is detected and handled.
 
+### Submission contract and bundle
+
+```bash
+uv run python scripts/verify_submission_contract.py     # Slide 16 / FAQ checks on the root files
+uv run python scripts/package_submission.py             # dist/VITChennai_ZeroDrift.zip + smoke test
+```
+
+`scripts/verify_submission_contract.py` checks `estimated_trajectory.txt` and `metadata.json` against the input CSV: space-separated with `#` comments only, exactly 8 floats per row, timestamps equal to the input timestamps in seconds, one pose per IMU row including the blind window and the duplicated timestamps, no NaN/Inf, quaternion norms within 1e-4 of 1, `peak_memory_mb <= 8.0` and `ms_per_1s_imu <= 20.0`.
+
+`scripts/package_submission.py` writes `dist/VITChennai_ZeroDrift.zip` with `estimated_trajectory.txt`, `metadata.json`, `README.md`, `requirements.txt`, `Dockerfile` and `src/` (no byte-code). It changes nothing else in the repository. It then extracts the archive into a temporary `test_eval` directory and runs `src/main.py` there in every invocation style, and checks that the run imports nothing beyond `numpy` and the standard library.
+
 ---
 
 ## Limits
@@ -155,7 +235,7 @@ The EuRoC IMU and ground-truth CSVs (a few MB) are downloaded by `scripts/fetch_
 - **Recording length.** Heap grows by roughly 0.1 MB per 1000 rows. Measured: 3.45 MB at 184 s, 6.90 MB at 368 s, 10.32 MB at 552 s (all 200 Hz). The 8 MB limit is reached at about 7 minutes of 200 Hz data; the 4 MB design target holds up to about 3.5 minutes.
 - **Sustained turning without a standstill.** On `SYN_fig8_moving` the platform circles continuously and never stops. The zero-velocity prior then reads part of the centripetal acceleration as tilt and gyro bias, and the gain over the stationary baseline is small (12 %).
 - **Slow motion is weakly observable** without the drag aid: on non-multirotor data the estimate keeps the shape of fast motion but not slow excursions.
-- **Docker.** The `Dockerfile` has not been built or run.
+- **Docker.** The submission `Dockerfile` was built and run (Python 3.11.18, NumPy 2.4.6, Linux container): 6.4 ms per 1 s of IMU, 2.72 MB peak heap, and a trajectory identical to the committed one. `Dockerfile.dev` has not been built or run.
 
 ---
 
@@ -175,22 +255,38 @@ VITChennai_ZeroDrift/
 │   ├── synthetic_sequences.py     # two synthetic recordings with exact ground truth
 │   ├── fetch_euroc.py             # downloads EuRoC IMU + ground-truth CSVs only
 │   ├── test_input_formats.py      # layout / unit / degenerate-input checks
+│   ├── verify_submission_contract.py  # Slide 16 / FAQ checks on the root output files
+│   ├── package_submission.py      # builds and smoke-tests dist/VITChennai_ZeroDrift.zip
 │   ├── evaluate.sh                # wrapper (bash)
 │   └── evaluate.ps1               # wrapper (PowerShell)
+├── data/imu0/data.csv             # default test input: V1_01_easy degraded by the official script
 ├── docs/Track3_FAQ_Responses.txt  # official FAQ
 ├── plots/                         # generated figures
 ├── results/summary.json           # generated benchmark table
-├── estimated_trajectory.txt       # output for degraded V1_01_easy
+├── estimated_trajectory.txt       # output for data/imu0/data.csv
 ├── ground_truth_trajectory.txt    # matching ground truth (TUM)
 ├── metadata.json                  # runtime / heap / diagnostics of that run
-├── pyproject.toml, uv.lock        # uv project
-├── requirements.txt               # exported with uv pip compile
-└── Dockerfile
+├── pyproject.toml, uv.lock        # uv project (full environment)
+├── requirements.txt               # runtime dependency: numpy>=1.24.0
+├── requirements-dev.txt           # full environment, exported with uv pip compile
+├── Dockerfile                     # submission image: python:3.11-slim, ENTRYPOINT src/main.py
+├── Dockerfile.dev                 # development image with the verification suite (uv)
+└── dist/VITChennai_ZeroDrift.zip  # submission bundle (generated, not committed)
 ```
 
 ## Docker
 
+The submission image contains only the estimator:
+
 ```bash
 docker build -t vitchennai_zerodrift .
-docker run --rm vitchennai_zerodrift                 # runs scripts/evaluate.sh
+docker run --rm -v "$PWD:/io" vitchennai_zerodrift \
+    --input /io/imu0/data.csv --output /io/estimated_trajectory.txt --meta /io/metadata.json
+```
+
+`Dockerfile.dev` is the earlier development image. It installs the full environment with uv and runs the verification suite:
+
+```bash
+docker build -f Dockerfile.dev -t vitchennai_zerodrift_dev .
+docker run --rm vitchennai_zerodrift_dev             # runs scripts/evaluate.sh
 ```

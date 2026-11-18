@@ -1,14 +1,14 @@
 {
   "project": "VITChennai_ZeroDrift",
   "track": "Samsung XR Hackathon 2026 - Track 3: Path Finder",
-  "input": "degraded.csv",
+  "input": "data.csv",
   "output": "estimated_trajectory.txt",
   "rows_in": 28367,
   "rows_out": 28367,
   "imu_duration_s": 145.595,
   "median_dt_s": 0.004999936,
-  "wall_time_s": 0.9221,
-  "ms_per_1s_imu": 6.333,
+  "wall_time_s": 0.8932,
+  "ms_per_1s_imu": 6.135,
   "peak_memory_mb": 2.738,
   "memory_traced_with": "tracemalloc (whole pipeline, timing includes its overhead)",
   "limits": {

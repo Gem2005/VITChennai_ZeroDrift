@@ -1,32 +1,31 @@
 # ==============================================================================
-# VITChennai_ZeroDrift - reproducible environment (Samsung XR Hackathon 2026,
-# Track 3: Path Finder). Dependencies are installed with uv from uv.lock.
+# VITChennai_ZeroDrift - Samsung XR Hackathon 2026, Track 3: Path Finder
+# Submission image (Slide 25): Python 3.11, numpy, src/main.py as the entry point.
 #
 #   docker build -t vitchennai_zerodrift .
-#   docker run --rm vitchennai_zerodrift                        # full verification suite
 #   docker run --rm -v "$PWD:/io" vitchennai_zerodrift \
-#       uv run python src/main.py --input /io/degraded.csv \
-#       --output /io/estimated_trajectory.txt --meta /io/metadata.json
+#       --input /io/imu0/data.csv --output /io/estimated_trajectory.txt --meta /io/metadata.json
+#
+# Everything after the image name is passed to src/main.py (flags or positional).
+# The development image with the full verification suite is Dockerfile.dev.
 # ==============================================================================
 
-FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim
+FROM python:3.11-slim
 
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    UV_LINK_MODE=copy \
-    UV_COMPILE_BYTECODE=1 \
-    MPLBACKEND=Agg \
-    OMP_NUM_THREADS=1 \
-    OPENBLAS_NUM_THREADS=1
+# one CPU thread (src/main.py sets the same variables itself before importing numpy)
+ENV OMP_NUM_THREADS=1 \
+    OPENBLAS_NUM_THREADS=1 \
+    MKL_NUM_THREADS=1 \
+    VECLIB_MAXIMUM_THREADS=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
 
-WORKDIR /workspace/VITChennai_ZeroDrift
+WORKDIR /app
 
-# dependency layer (numpy for the estimator; scipy, pandas, evo, matplotlib for the suite)
-COPY pyproject.toml uv.lock .python-version README.md ./
-RUN uv sync --frozen --no-install-project
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+COPY src/ src/
+COPY README.md .
 
-# degrade -> estimate -> assert -> evo -> plots. EuRoC CSVs are fetched when the
-# network allows it; otherwise the synthetic sequences are benchmarked alone.
-CMD ["bash", "scripts/evaluate.sh"]
+ENTRYPOINT ["python3", "src/main.py"]

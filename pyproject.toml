@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 authors = [
     { name = "Gemini Sharma", email = "geminisharma2005@gmail.com" },
+    { name = "Aarav Sharma", email = "aaravsharma0964@gmail.com" },
 ]
 # Runtime (src/main.py and everything it imports) needs numpy only.
 # scipy + pandas are required by the organiser's degrade_imu.py; evo and

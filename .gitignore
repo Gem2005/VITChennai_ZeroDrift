@@ -10,8 +10,15 @@ ENV/
 .vscode/
 *.log
 
-# downloaded benchmark data (scripts/fetch_euroc.py re-creates it)
-data/
+# downloaded benchmark data (scripts/fetch_euroc.py re-creates it); the default
+# degraded test input data/imu0/data.csv (officially degraded V1_01_easy) is kept
+data/*
+!data/imu0/
+data/imu0/*
+!data/imu0/data.csv
+
+# submission bundle (scripts/package_submission.py re-creates it)
+dist/
 
 # per-sequence benchmark artefacts (scripts/benchmark_all.py re-creates them);
 # the summary table is kept
