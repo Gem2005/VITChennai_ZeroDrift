@@ -7,9 +7,9 @@
   "rows_out": 28367,
   "imu_duration_s": 145.595,
   "median_dt_s": 0.004999936,
-  "wall_time_s": 0.8932,
-  "ms_per_1s_imu": 6.135,
-  "peak_memory_mb": 2.738,
+  "wall_time_s": 0.9661,
+  "ms_per_1s_imu": 6.635,
+  "peak_memory_mb": 2.743,
   "memory_traced_with": "tracemalloc (whole pipeline, timing includes its overhead)",
   "limits": {
     "peak_memory_mb": 8.0,
@@ -85,7 +85,7 @@
     "zupt_blocks": 46
   },
   "runtime": {
-    "python": "3.13.6",
+    "python": "3.13.12",
     "numpy": "2.5.5"
   }
 }

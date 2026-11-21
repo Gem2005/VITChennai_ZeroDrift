@@ -10,6 +10,7 @@ Samsung XR Hackathon 2026 — Track 3: Path Finder
 | **Authors** | Gemini Sharma (`geminisharma2005@gmail.com`, GitHub: `@gem2005`)<br/>Aarav Sharma (`aaravsharma0964@gmail.com`) |
 | **Email** | geminisharma2005@gmail.com, aaravsharma0964@gmail.com |
 | **GitHub** | [@gem2005](https://github.com/gem2005) — [`VITChennai_ZeroDrift`](https://github.com/gem2005/VITChennai_ZeroDrift) |
+| **AI Disclosure** | [AI_DISCLOSURE.md](AI_DISCLOSURE.md) |
 
 `src/main.py` reads the 7-column IMU CSV produced by the organisers' `degrade_imu.py` and writes one TUM pose per input row. It uses no waypoints, images or other aiding. The runtime path imports only `numpy` and the Python standard library, runs on one thread, and is measured against the Track 3 limits (heap ≤ 8 MB, ≤ 20 ms per 1 s of IMU data).
 
