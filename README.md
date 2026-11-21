@@ -1,5 +1,7 @@
 # VITChennai_ZeroDrift
 
+## Demo Video: https://drive.google.com/drive/u/0/folders/1ZBrD0Iiweyo2nKmz-aOgF8-qLfywThTz
+
 **IMU-only 6-DoF trajectory estimation under severe sensor degradation**
 Samsung XR Hackathon 2026 — Track 3: Path Finder
 
